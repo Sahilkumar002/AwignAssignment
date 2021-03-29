@@ -49,7 +49,6 @@ class MainActivity : AppCompatActivity() {
         mapFragment = supportFragmentManager.findFragmentById(R.id.mapFrag) as SupportMapFragment?
         mapFragment?.getMapAsync(mapReadyCallback)
 
-
     }
 
     private val mapReadyCallback = OnMapReadyCallback { asyncMap ->
@@ -57,7 +56,6 @@ class MainActivity : AppCompatActivity() {
         googleMap = asyncMap
         setClickListenersNow()
         checkLocationPermission()
-
     }
 
     private fun setClickListenersNow() {
@@ -65,7 +63,6 @@ class MainActivity : AppCompatActivity() {
         googleMap?.setOnMapClickListener { latLng ->
             /* add marker here */
             circle?.let { crc ->
-
                 val distance = FloatArray(2)
                 Location.distanceBetween(
                     latLng.latitude, latLng.longitude, crc.center.latitude, crc.center.longitude,
@@ -112,6 +109,7 @@ class MainActivity : AppCompatActivity() {
             addOnSuccessListener { response ->
                 if (response.locationSettingsStates.isLocationPresent) {
                     updateMapView()
+                    updateLocationPinOnMap()
                 }
             }
             addOnFailureListener { exception ->

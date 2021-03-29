@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkLocationPermission() {
         if (rtPermissions.isLocationGranted()) {
             checkGPSStatus()
-//            updateMapView()
+            updateMapView()
         } else {
             rtPermissions.requestPermissionForLocation()
         }
@@ -133,7 +133,8 @@ class MainActivity : AppCompatActivity() {
             try {
                 updateLocationPinOnMap()
                 gMap.isMyLocationEnabled = true
-                changeMyLocationPosition()
+                gMap.uiSettings.isMyLocationButtonEnabled = true
+
             } catch (e: SecurityException) {
                 Log.e("Exception: %s", e.message, e)
             }
@@ -163,6 +164,8 @@ class MainActivity : AppCompatActivity() {
             locationResult.addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     task.result?.let { loc ->
+                        googleMap?.uiSettings?.isMyLocationButtonEnabled = true
+
                         googleMap?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(loc.latitude, loc.longitude), defaultZoom

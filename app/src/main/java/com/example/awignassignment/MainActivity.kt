@@ -40,7 +40,6 @@ class MainActivity : AppCompatActivity() {
         LocationServices.getFusedLocationProviderClient(this)
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -59,7 +58,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setClickListenersNow() {
-
         googleMap?.setOnMapClickListener { latLng ->
             /* add marker here */
             circle?.let { crc ->
@@ -71,7 +69,8 @@ class MainActivity : AppCompatActivity() {
 
                 if (distance[0] <= crc.radius) {
                     googleMap?.addMarker(
-                        MarkerOptions().position(latLng).title("New position")
+                        MarkerOptions().position(latLng)
+                            .title("New Marker on Lat ${latLng.latitude} long ${latLng.longitude}")
                     )
                 } else {
                     Toast.makeText(
@@ -132,7 +131,7 @@ class MainActivity : AppCompatActivity() {
                 updateLocationPinOnMap()
                 gMap.isMyLocationEnabled = true
                 gMap.uiSettings.isMyLocationButtonEnabled = true
-
+                changeMyLocationPosition()
             } catch (e: SecurityException) {
                 Log.e("Exception: %s", e.message, e)
             }
@@ -211,7 +210,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray

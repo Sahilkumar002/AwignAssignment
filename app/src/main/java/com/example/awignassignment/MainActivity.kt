@@ -1,5 +1,7 @@
 package com.example.awignassignment
 
+import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -12,8 +14,8 @@ import androidx.core.content.ContextCompat
 import com.example.awignassignment.databinding.ActivityMainBinding
 import com.example.awignassignment.utils.LOCATION_RT_REQUEST_CODE
 import com.example.awignassignment.utils.RTPermissions
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -36,7 +38,6 @@ class MainActivity : AppCompatActivity() {
     private val rtPermissions: RTPermissions by lazy { RTPermissions(this) }
     private val fusedLocationProviderClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
-
     }
 
 
@@ -90,9 +91,39 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkLocationPermission() {
         if (rtPermissions.isLocationGranted()) {
-            updateMapView()
+            checkGPSStatus()
+//            updateMapView()
         } else {
             rtPermissions.requestPermissionForLocation()
+        }
+
+    }
+
+    private fun checkGPSStatus() {
+        val setClient = LocationServices.getSettingsClient(this)
+        val builder =
+            LocationSettingsRequest.Builder()
+                .addLocationRequest(LocationRequest.create().apply {
+                    priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                }).setAlwaysShow(true)
+
+        val task = setClient.checkLocationSettings(builder.build())
+        task.apply {
+            addOnSuccessListener { response ->
+                if (response.locationSettingsStates.isLocationPresent) {
+                    updateMapView()
+                }
+            }
+            addOnFailureListener { exception ->
+                if (exception is ResolvableApiException) {
+                    try {
+                        exception.startResolutionForResult(this@MainActivity, 9195)
+                    } catch (e: IntentSender.SendIntentException) {
+                        e.printStackTrace()
+                    }
+                }
+
+            }
         }
 
     }
@@ -166,6 +197,20 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 9195) {
+            if (resultCode == RESULT_OK) {
+                updateMapView()
+            } else {
+                Toast.makeText(
+                    this, "Location is needed to run this application",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
@@ -174,12 +219,18 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             LOCATION_RT_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    updateMapView()
+                    checkGPSStatus()
                 } else {
                     rtPermissions.requestPermissionForLocation()
                 }
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        checkGPSStatus()
+    }
+
 
 }
